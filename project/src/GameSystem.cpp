@@ -39,6 +39,9 @@ void GameSystem::Initialize()
 
 	//背景色設定
 	SetBackgroundColor(0, 0, 0);
+
+	// 使用する Direct3D のバージョンを 9EX に設定
+	SetUseDirect3DVersion(DX_DIRECT3D_9EX);
 	
 	//初期化と裏画面化
 	if (DxLib_Init() == -1 || SetDrawScreen(DX_SCREEN_BACK) != 0)

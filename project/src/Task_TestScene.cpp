@@ -1,5 +1,4 @@
 #include "Task_TestScene.h"
-#include "DxLib.h"
 #include "ImageLoader.h"
 #include "InputState.h"
 
@@ -11,9 +10,8 @@ namespace TestScene
 	Resource::Resource()
 	{
 		auto& imageLoader = ImageLoader::GetInstance();
-		imageName = "Bomb";
-		imageLoader.LoadDivImage(imageName, "data/image/bomb.png", 12, 12, 1, 64, 64);
-		imageLoader.AddAnimationData(imageName, 0, 11, 5.f, true);
+		imageName = "Art";
+		imageLoader.LoadOneImage(imageName, "data/image/art.png");
 	}
 	//----------------------------------------------
 	//リソースのデストラクタ
@@ -42,12 +40,8 @@ namespace TestScene
 	//タスクのコンストラクタ
 	Task::Task():
 		TaskAbstract(defGroupName, defTaskName, defPriority),
-		res(Resource::Create()),
-		plus(0, 0),
-		hoge(1, 0, 100)
+		res(Resource::Create())
 	{
-		imgDrawer.Initialize(
-			ImageLoader::GetInstance().GetImageData(res->imageName), true);
 	}
 	//----------------------------------------------
 	//タスクのデストラクタ
@@ -75,7 +69,17 @@ namespace TestScene
 	//----------------------------------------------
 	void Task::Initialize()
 	{
-
+		graph = LoadGraph("data/image/art.png");
+		shaderhandle = LoadPixelShader("data/shader/test.pso");
+		for (int i = 0; i < 4; ++i)
+		{
+			vertex[i].pos = VGet((i % 2)*1280.0f, (i / 2)*720.0f, 0);
+			vertex[i].rhw = 1.0f;
+			vertex[i].dif = GetColorU8(255, 255, 255, 255);
+			vertex[i].spc = GetColorU8(0, 0, 0, 0);
+			vertex[i].u = vertex[i].su = float(i % 2);
+			vertex[i].v = vertex[i].sv = float(i / 2);
+		}
 	}
 
 	//----------------------------------------------
@@ -91,20 +95,7 @@ namespace TestScene
 	//----------------------------------------------
 	void Task::Update()
 	{
-		hoge.RunLoop();
-		imgDrawer.AnimUpdate();
-		
-		auto& mouse = InputDXL::GetMouse();
-		if (mouse[MouseButton::RIGHT] == DOWN)
-		{
-			TaskSystem::GetInstance().AllKillTask();
-		}
 
-		auto& task = TaskSystem::GetInstance();
-		if (task.GetTaskGroup<TestScene::Task>(defGroupName, defTaskName))
-		{
-			DrawFormatString(0, 25, GetColor(255, 255, 255), "(^^) < You are an idiot.");
-		}
 	}
 
 	//----------------------------------------------
@@ -112,21 +103,11 @@ namespace TestScene
 	//----------------------------------------------
 	void Task::Draw()
 	{
-		/*imgDrawer.Draw(MATH::Vec2(0, 0) + plus,
-			1.f,
-			1.f,
-			0.f,
-			false,
-			Color(255, 255, 255, 255));*/
-
-		imgDrawer.Draw(MATH::Vec2(300, 300) + plus);
-		DrawFormatString(0, 50, GetColor(255, 255, 255), "%d", hoge.GetNow());
-
-		/*imgDrawer.DrawOne(
-			7,
-			plus + MATH::Vec2(300.f, 300.f),
-			MATH::Vec2(16, 16),
-			MATH::Box2D(16, 16, 32, 32),
-			false);*/
+		//シェーダで使うテクスチャをセット
+		SetUseTextureToShader(0, graph);
+		//ピクセルシェーダのセット
+		SetUsePixelShader(shaderhandle);
+		//描画
+		DrawPrimitive2DToShader(vertex, 4, DX_PRIMTYPE_TRIANGLESTRIP);
 	}
 }

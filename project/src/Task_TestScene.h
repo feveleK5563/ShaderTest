@@ -1,4 +1,5 @@
 #pragma once
+#include "DxLib.h"
 #include "TaskSystem.h"
 #include "ImageDrawer.h"
 #include "Counter.hpp"
@@ -29,9 +30,9 @@ namespace TestScene
 	private:
 		std::shared_ptr<Resource> res;	//確保したリソース
 
-		ImageDrawer imgDrawer;
-		MATH::Vec2 plus;
-		Counter<int> hoge;
+		int graph;
+		int shaderhandle;
+		VERTEX2DSHADER vertex[4];
 
 	public:
 		//コンストラクタ
