@@ -1,6 +1,7 @@
 #include "Task_TestScene.h"
 #include "ImageLoader.h"
 #include "InputState.h"
+#include "SystemDefine.h"
 
 namespace TestScene
 {
@@ -69,16 +70,24 @@ namespace TestScene
 	//----------------------------------------------
 	void Task::Initialize()
 	{
-		graph = LoadGraph("data/image/art.png");
+		graph = LoadGraph("data/image/art2.png");
 		shaderhandle = LoadPixelShader("data/shader/test.pso");
+
+		float x = 1280.f, y = 720;
+		vertex[0].pos = VGet(-1.f,	-1.f,	0.f);
+		vertex[1].pos = VGet(x,		-1.f,	0.f);
+		vertex[2].pos = VGet(-1.f,	y,		0.f);
+		vertex[3].pos = VGet(x,		y,		0.f);
+
 		for (int i = 0; i < 4; ++i)
 		{
-			vertex[i].pos = VGet((i % 2)*1280.0f, (i / 2)*720.0f, 0);
-			vertex[i].rhw = 1.0f;
+			vertex[i].rhw = 1.f;
 			vertex[i].dif = GetColorU8(255, 255, 255, 255);
 			vertex[i].spc = GetColorU8(0, 0, 0, 0);
-			vertex[i].u = vertex[i].su = float(i % 2);
-			vertex[i].v = vertex[i].sv = float(i / 2);
+			vertex[i].u  = float(i % 2);
+			vertex[i].su = float(i % 2);
+			vertex[i].v  = float(i / 2);
+			vertex[i].sv = float(i / 2);
 		}
 	}
 
@@ -103,6 +112,9 @@ namespace TestScene
 	//----------------------------------------------
 	void Task::Draw()
 	{
+		//DrawGraph(0, 0, graph, false);
+
+		//SetUseDivGraphFlag(FALSE);
 		//シェーダで使うテクスチャをセット
 		SetUseTextureToShader(0, graph);
 		//ピクセルシェーダのセット
