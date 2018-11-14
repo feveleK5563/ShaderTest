@@ -41,7 +41,8 @@ namespace TestScene
 	//タスクのコンストラクタ
 	Task::Task():
 		TaskAbstract(defGroupName, defTaskName, defPriority),
-		res(Resource::Create())
+		res(Resource::Create()),
+		timer(0.01f)
 	{
 	}
 	//----------------------------------------------
@@ -104,7 +105,7 @@ namespace TestScene
 	//----------------------------------------------
 	void Task::Update()
 	{
-
+		timer.Run();
 	}
 
 	//----------------------------------------------
@@ -112,11 +113,10 @@ namespace TestScene
 	//----------------------------------------------
 	void Task::Draw()
 	{
-		//DrawGraph(0, 0, graph, false);
-
-		//SetUseDivGraphFlag(FALSE);
 		//シェーダで使うテクスチャをセット
 		SetUseTextureToShader(0, graph);
+
+		SetPSConstSF(0, timer.GetNow());
 		//ピクセルシェーダのセット
 		SetUsePixelShader(shaderhandle);
 		//描画

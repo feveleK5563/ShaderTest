@@ -34,6 +34,8 @@ namespace TestScene
 		int shaderhandle;
 		VERTEX2DSHADER vertex[4];
 
+		Counter<float> timer;
+
 	public:
 		//コンストラクタ
 		Task();
