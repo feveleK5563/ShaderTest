@@ -42,7 +42,9 @@ namespace TestScene
 	Task::Task():
 		TaskAbstract(defGroupName, defTaskName, defPriority),
 		res(Resource::Create()),
-		timer(0.01f)
+		timer(40.f),
+		mousePos(0, 0),
+		onClick(false)
 	{
 	}
 	//----------------------------------------------
@@ -72,9 +74,9 @@ namespace TestScene
 	void Task::Initialize()
 	{
 		graph = LoadGraph("data/image/art2.png");
-		shaderhandle = LoadPixelShader("data/shader/test.pso");
+		shaderhandle = LoadPixelShader("data/shader/circle.pso");
 
-		float x = 1280.f, y = 720;
+		float x = (float)SYSDEF::SizeX, y = (float)SYSDEF::SizeY;
 		vertex[0].pos = VGet(-1.f,	-1.f,	0.f);
 		vertex[1].pos = VGet(x,		-1.f,	0.f);
 		vertex[2].pos = VGet(-1.f,	y,		0.f);
@@ -106,6 +108,14 @@ namespace TestScene
 	void Task::Update()
 	{
 		timer.Run();
+
+		auto& mouse = InputDXL::GetMouse();
+		if (mouse[MouseButton::LEFT] == DOWN)
+		{
+			mousePos = mouse.GetPos();
+			onClick = !onClick;
+			timer.Reset();
+		}
 	}
 
 	//----------------------------------------------
@@ -113,10 +123,18 @@ namespace TestScene
 	//----------------------------------------------
 	void Task::Draw()
 	{
-		//シェーダで使うテクスチャをセット
-		SetUseTextureToShader(0, graph);
+		float tmp[6]{ 
+			(float)SYSDEF::SizeX,	//画面サイズX
+			(float)SYSDEF::SizeY,	//画面サイズY
+			timer.GetNow(),			//時間
+			(float)onClick,			//クリックしたか否か
+			mousePos.x,				//マウス座標X
+			mousePos.y				//マウス座標Y
+		};
 
-		SetPSConstSF(0, timer.GetNow());
+		SetPSConstSFArray(0, tmp, 6);
+
+
 		//ピクセルシェーダのセット
 		SetUsePixelShader(shaderhandle);
 		//描画

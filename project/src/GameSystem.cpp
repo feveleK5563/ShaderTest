@@ -77,7 +77,7 @@ void GameSystem::MainLoop()
 		}
 
 		ts.Draw();
-		fps.Draw();
+		//fps.Draw();
 	}
 }
 

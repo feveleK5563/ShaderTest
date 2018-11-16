@@ -17,17 +17,23 @@ sampler tex : register( s0 );
 //タイマー
 float timer : register( c0 );
 
+float GetXPos(PS_INPUT psin)
+{
+	return fmod( 1.0 + psin.TexCoord0.x + 0.2 * sin( psin.TexCoord0.y * 24.0 + timer ) , 1.0);
+}
+
+
 PS_OUTPUT main( PS_INPUT psin )
 {
-	PS_OUTPUT psOut;
+	PS_OUTPUT psout;
 	float4 texColor;
 	float2 calcPos;
 	
-	calcPos.x = fmod( 1.0 + psin.TexCoord0.x + 0.2 * sin( psin.TexCoord0.y * 24.0 + timer ) , 1.0);
+	calcPos.x = GetXPos(psin);
 	calcPos.y = psin.TexCoord0.y;
 	
 	texColor  = tex2D( tex, calcPos );
 	
-	psOut.Output = texColor;
-	return psOut;
+	psout.Output = texColor;
+	return psout;
 }

@@ -35,6 +35,8 @@ namespace TestScene
 		VERTEX2DSHADER vertex[4];
 
 		Counter<float> timer;
+		MATH::Vec2 mousePos;
+		bool onClick;
 
 	public:
 		//コンストラクタ
