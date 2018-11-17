@@ -11,32 +11,25 @@ namespace TestScene
 	const float			defPriority(0.f);	//デフォルトの処理優先度
 
 	//----------------------------------------------
-	class Resource
-	{
-	private:
-		static std::weak_ptr<Resource> instance;
-
-	public:
-		std::string imageName;
-
-		Resource();		//コンストラクタ
-		~Resource();	//デストラクタ
-		static std::shared_ptr<Resource> Create();	//リソースの生成
-	};
-
-	//----------------------------------------------
 	class Task : public TaskAbstract
 	{
 	private:
-		std::shared_ptr<Resource> res;	//確保したリソース
-
-		int graph;
-		int shaderhandle;
+		int pshandle;
+		int pscbhandle;
 		VERTEX2DSHADER vertex[4];
 
 		Counter<float> timer;
 		MATH::Vec2 mousePos;
 		bool onClick;
+
+		//シェーダーに送る値
+		struct constantBuffer
+		{
+			FLOAT2 windowSize;
+			FLOAT2 mousePos;
+			float radius;
+			bool onClick;
+		};
 
 	public:
 		//コンストラクタ

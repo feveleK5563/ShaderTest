@@ -5,35 +5,6 @@
 
 namespace TestScene
 {
-	std::weak_ptr<Resource> Resource::instance;
-	//----------------------------------------------
-	//リソースのコンストラクタ
-	Resource::Resource()
-	{
-		auto& imageLoader = ImageLoader::GetInstance();
-		imageName = "Art";
-		imageLoader.LoadOneImage(imageName, "data/image/art.png");
-	}
-	//----------------------------------------------
-	//リソースのデストラクタ
-	Resource::~Resource()
-	{
-		auto& imageLoader = ImageLoader::GetInstance();
-		imageLoader.DeleteImageData(imageName);
-	}
-	//----------------------------------------------
-	//リソースの生成
-	std::shared_ptr<Resource> Resource::Create()
-	{
-		auto sp = instance.lock();
-		if (!sp)
-		{
-			sp = std::make_shared<Resource>();
-			instance = sp;
-		}
-		return sp;
-	}
-
 	//☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★
 	//★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆
 
@@ -41,7 +12,6 @@ namespace TestScene
 	//タスクのコンストラクタ
 	Task::Task():
 		TaskAbstract(defGroupName, defTaskName, defPriority),
-		res(Resource::Create()),
 		timer(40.f),
 		mousePos(0, 0),
 		onClick(false)
@@ -73,8 +43,9 @@ namespace TestScene
 	//----------------------------------------------
 	void Task::Initialize()
 	{
-		graph = LoadGraph("data/image/art2.png");
-		shaderhandle = LoadPixelShader("data/shader/circle.pso");
+		//constantBufferのサイズは24だが、なんか2の累乗じゃないと正常に確保してくれないっぽいので32だけ確保
+		pscbhandle = CreateShaderConstantBuffer(32);
+		pshandle = LoadPixelShader("data/shader11/circle.pso");
 
 		float x = (float)SYSDEF::SizeX, y = (float)SYSDEF::SizeY;
 		vertex[0].pos = VGet(-1.f,	-1.f,	0.f);
@@ -99,7 +70,8 @@ namespace TestScene
 	//----------------------------------------------
 	void Task::Finalize()
 	{
-
+		DeleteShader(pshandle);
+		DeleteShaderConstantBuffer(pscbhandle);
 	}
 
 	//----------------------------------------------
@@ -123,20 +95,23 @@ namespace TestScene
 	//----------------------------------------------
 	void Task::Draw()
 	{
-		float tmp[6]{ 
-			(float)SYSDEF::SizeX,	//画面サイズX
-			(float)SYSDEF::SizeY,	//画面サイズY
-			timer.GetNow(),			//時間
-			(float)onClick,			//クリックしたか否か
-			mousePos.x,				//マウス座標X
-			mousePos.y				//マウス座標Y
-		};
+		//ピクセルシェーダー用の定数バッファのアドレスを取得
+		constantBuffer* cb = (constantBuffer*)GetBufferShaderConstantBuffer(pscbhandle);
 
-		SetPSConstSFArray(0, tmp, 6);
-
-
+		//各値を取得したアドレスに書き込み
+		cb->windowSize.u = (float)SYSDEF::SizeX;
+		cb->windowSize.v = (float)SYSDEF::SizeY;
+		cb->mousePos.u = mousePos.x;
+		cb->mousePos.v = mousePos.y;
+		cb->radius = timer.GetNow();
+		cb->onClick = onClick;
+		//ピクセルシェーダー用の定数バッファを更新して書き込んだ内容を反映する
+		UpdateShaderConstantBuffer(pscbhandle);
+		//ピクセルシェーダー用の定数バッファを定数バッファレジスタ0にセット
+		SetShaderConstantBuffer(pscbhandle, DX_SHADERTYPE_PIXEL, 0);
+		
 		//ピクセルシェーダのセット
-		SetUsePixelShader(shaderhandle);
+		SetUsePixelShader(pshandle);
 		//描画
 		DrawPrimitive2DToShader(vertex, 4, DX_PRIMTYPE_TRIANGLESTRIP);
 	}

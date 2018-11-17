@@ -11,29 +11,23 @@ struct PS_OUTPUT
 	float4 Output		: SV_TARGET0;
 };
 
-
-//画面サイズ
-float sizex : register( c0 );
-float sizey : register( c1 );
-
-//座標
-float posx : register( c2 );
-float posy : register( c3 );
-
-//円の半径
-float r : register( c4 );
-
-//クリックされたか否か
-bool onclick : register( c5 );
+//描画位置の計算に使用する値
+cbuffer CBUFFER : register( b0 )
+{
+	float2	size;		//画面サイズ
+	float2	pos;		//円の中心座標
+	float	radius;		//円の半径
+	bool	onClick;	//クリックしたか否か
+}
 
 
 //--------------------------------------------------------------------------------------------------
 
-bool CirclePixel( float px, float py )
+bool CirclePixel( float2 p )
 {
-	return ((px - posx) * (px - posx) +
-			(py - posy) * (py - posy) -
-			(r * r) < 0.000001f);
+	return ((p.x - pos.x) * (p.x - pos.x) +
+			(p.y - pos.y) * (p.y - pos.y) -
+			(radius * radius) < 0.000001f);
 }
 
 
@@ -46,12 +40,13 @@ PS_OUTPUT main( PS_INPUT psin )
 	psout.Output.b = 0.f;
 	psout.Output.a = 1.f;
 	
-	float px = sizex * psin.TexCoord0.x;
-	float py = sizey * psin.TexCoord0.y;
+	float2 p;
+	p.x = size.x * psin.TexCoord0.x;
+	p.y = size.y * psin.TexCoord0.y;
 	
-	if(onclick)
+	if(onClick)
 	{
-		if(CirclePixel(px, py))
+		if(CirclePixel(p))
 		{
 			psout.Output.r = 1.f;
 		}
@@ -62,7 +57,7 @@ PS_OUTPUT main( PS_INPUT psin )
 	}
 	else
 	{
-		if(CirclePixel(px, py))
+		if(CirclePixel(p))
 		{
 			psout.Output.r = 0.f;
 		}
